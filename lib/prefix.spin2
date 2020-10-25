@@ -24,21 +24,22 @@ p2start_address
         long    80000000 ' p2clkfreq
         long    19146744 ' p2clkconfig
   	long	115200   ' baudrate
-r0	long	0
-r1	long	0
-r2	long	0
-r3	long	0
-r4	long	0
-r5	long	0
-r6	long	0
-r7	long	0
-r8	long	0
-r9	long	0
-r10	long	0
-r11	long	0
-r12	long	0
-r13	long	0
-r14	long	0
+r15	long    0 ' dummy register only used to hold LR for contigous block transfers
+r14	long    0
+r13	long    0
+r12	long    0
+r11	long    0
+r10	long    0
+r9	long    0
+r8	long    0
+r7	long    0
+r6	long    0
+r5	long    0
+r4	long    0
+r3	long    0
+r2	long    0
+r1	long    0
+r0	long    0
 sp	long	0
 
 temp	long    0
@@ -139,6 +140,20 @@ __CMPSWAPSI
 	cmp	r0,r1 wz	'' compare with desired original value
  if_z   wrlong  temp1,r2	'' if match, save new value
 	ret
+
+__CTZSI	long	__CTZ
+__CLZSI	long	__CLZ
+__CTZ
+	push	__CLZSI_ret  ' put return address on stack when called via CALLD
+	rev	r0
+__CLZ
+	encod	r0 wc
+  if_c  subr	r0, #31
+  if_nc mov	r0, #32
+	ret	wcz
+__CLZSI_ret 
+	long	0 ' return address copied here with JMPRET/CALLD
+
 
 prefix_setup
         mov     save_r0, r0

@@ -35,9 +35,9 @@
 #define MAX_LIB_DIRS 4
 #define MAX_LIB_DIR_LEN 99
 #else
-#define MAX_NAME_LEN 30
+#define MAX_NAME_LEN 60
 #define MAX_OBJECTS 1000
-#define MAX_SYMBOLS 10000
+#define MAX_SYMBOLS 30000
 #define MAX_LIB_DIRS 10
 #define MAX_LIB_DIR_LEN 100
 #endif
@@ -47,6 +47,7 @@ int FindSymbolLimitsMask(char *str, int mask, int first, int last);
 
 int addr = 0;
 int debugflag = 0;
+int mapfileflag = 0;
 int start_addr = 0;
 
 char symsect[MAX_SYMBOLS];
@@ -79,6 +80,7 @@ void usage(void)
     printf("         [ -o file ]  output file name (default a.out)\n");
     printf("         [ -s addr ]  set starting address (default 0)\n");
     printf("         [ -L dir ]   specify library directory\n");
+    printf("         [ -m file ]  output map file (default a.map)\n");
     printf("         files        one or more object and library files\n");
     exit(1);
 }
@@ -417,7 +419,7 @@ int MergeGlobalVariables(int prev_num)
             if (j < 0) j = FindSymbol(symname[i], OTYPE_EXTERN_DATA);
             if (debugflag)
             {
-                printf("Found variable %s at %8.8x\n", symname[i], symvalue[i]);
+                printf("Found variable %s at %8.8x with type = %d\n", symname[i], symvalue[i], symtype[j]);
                 printf("i = %d, j = %d\n", i, j);
             }
             // Use address from previous object if found
@@ -650,6 +652,7 @@ int main(int argc, char **argv)
     char buffer[256];
 #endif
     char outfname[100];
+    char outmapfname[100];
     int unresolved = 0;
     FILE *infile, *outfile;
 
@@ -660,6 +663,7 @@ int main(int argc, char **argv)
 
     memset(symoffset, 0, MAX_SYMBOLS*4);
     strcpy(outfname, "a.out");
+    strcpy(outmapfname, "a.map");
     strcpy(liblist[numlibs++], "./");
     for (i = 1; i < argc; i++)
     {
@@ -675,6 +679,15 @@ int main(int argc, char **argv)
                     usage();
                 else
                     strcpy(outfname, argv[i]);
+            }
+            else if (argv[i][1] == 'm')
+            {
+                if (argv[i][2])
+                    strcpy(outmapfname, &argv[i][2]);
+                else if (++i >= argc)
+                    usage();
+                else
+                    strcpy(outmapfname, argv[i]);
             }
             else if (argv[i][1] == 'L')
             {
@@ -753,6 +766,36 @@ int main(int argc, char **argv)
             }
         }
     }
+    outfile = OpenFile(outmapfname, "wb");
+    for (i = 0; i < objnum; i++)
+    {
+        int j;
+        for (j = objstart[i]; j < objstart[i+1]; j++)
+            if (symtype[j] == OTYPE_GLOBAL_FUNC)
+                fprintf(outfile, "%2.2x %8.8x %-40s %s\n", symtype[j], symvalue[j], objname[i], symname[j]);
+    }
+    for (i = 0; i < objnum; i++)
+    {
+        int j;
+        for (j = objstart[i]; j < objstart[i+1]; j++)
+            if (symtype[j] == OTYPE_LOCAL_LABEL)
+                fprintf(outfile, "%2.2x %8.8x %-40s %s\n", symtype[j], symvalue[j], objname[i], symname[j]);
+    }
+    for (i = 0; i < objnum; i++)
+    {
+        int j;
+        for (j = objstart[i]; j < objstart[i+1]; j++)
+            if (symtype[j] == OTYPE_INIT_DATA)
+                fprintf(outfile, "%2.2x %8.8x %-40s %s\n", symtype[j], symvalue[j], objname[i], symname[j]);
+    }
+    for (i = 0; i < objnum; i++)
+    {
+        int j;
+        for (j = objstart[i]; j < objstart[i+1]; j++)
+            if (symtype[j] == OTYPE_UNINIT_DATA)
+                fprintf(outfile, "%2.2x %8.8x %-40s %s\n", symtype[j], symvalue[j], objname[i], symname[j]);
+    }
+    fclose(outfile);
 
     return 0;
 }

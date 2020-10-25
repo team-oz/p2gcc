@@ -12,10 +12,11 @@ chmod +x c2o
 ../bin/p2asm -o -hub cognew2.spin2
 ./c2o freqset
 ./c2o float
+../bin/p2asm -o -hub intrinsics.spin2
 ./c2o longlong
 ./c2o libm
 ../bin/p2asm -o -hub setjmp.spin2
-cat stdio.a stdlib.a string.a setjmp.o cogstart.o cogthread.o cognew2.o freqset.o float.o longlong.o >libc.a
+cat stdio.a stdlib.a string.a setjmp.o cogstart.o cogthread.o cognew2.o freqset.o float.o intrinsics.o longlong.o >libc.a
 cp libm.o libm.a
 ../bin/p2asm -o prefix.spin2
 ./c2o p2start

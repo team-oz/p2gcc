@@ -52,6 +52,9 @@
 #define DATA_BUFFER_SIZE 1000000
 #endif
 
+// size of line buffer read from file
+#define LINE_BUFFER_SIZE 2048
+
 // Keywords and delimiters
 char *SectionKeywords[] = {"dat", "con", "pub", "pri", "var", 0};
 
@@ -72,8 +75,8 @@ int hubmode = 0;
 int bincount = 0;
 int objflag = 0;
 int hasmain = 0;
-char buffer2[300];
-char buffer3[300];
+char buffer2[LINE_BUFFER_SIZE];
+char buffer3[LINE_BUFFER_SIZE];
 int debugflag = 0;
 int case_sensative = 0;
 int datamode = 0;
@@ -2000,7 +2003,7 @@ void ParseCon(void)
 {
     int num;
     char *tokens[200];
-    char buffer[600];
+    char buffer[2*LINE_BUFFER_SIZE];
     int mode = MODE_CON;
     int commentflag = 0;
     int currval = 0;
@@ -2013,7 +2016,7 @@ void ParseCon(void)
     line_number = 0;
     object_section = SECTION_NULL;
 
-    while (ReadString(buffer2, 300, infile, unicode))
+    while (ReadString(buffer2, LINE_BUFFER_SIZE, infile, unicode))
     {
         if (GetLineMode(&commentflag, &num, tokens, buffer, &mode))continue;
         if (mode == MODE_CON)
@@ -2026,7 +2029,7 @@ void Parse(int pass)
 {
     int i, num;
     char *tokens[200];
-    char buffer[600];
+    char buffer[2*LINE_BUFFER_SIZE];
     int mode = MODE_CON;
     int commentflag = 0;
     //int currval = 0;
@@ -2038,7 +2041,7 @@ void Parse(int pass)
     line_number = 0;
     object_section = SECTION_NULL;
 
-    while (ReadString(buffer2, 300, infile, unicode))
+    while (ReadString(buffer2, LINE_BUFFER_SIZE, infile, unicode))
     {
         line_number++;
         strcpy(buffer3, buffer2);

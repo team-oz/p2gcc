@@ -19,9 +19,11 @@ static void init_files(void)
     for (i = 3; i < 10; i++) __files[i]._flag = 0;
 }
 
-int __attribute__((noinline)) _get_ptrb(void)
+int _get_ptrb(void)
 {
-    __asm__("mov r0, ptrb");
+    int ptr;
+    __asm__("mov %0, ptrb" : "=r" (ptr) );
+    return ptr;
 }
 
 void configserial(int baudrate)

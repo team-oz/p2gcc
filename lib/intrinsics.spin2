@@ -1,0 +1,27 @@
+con
+        lr = $1f6
+        r0 = 23
+
+dat
+        orgh    $400
+        .text
+        .global ___popcountsi2
+___popcountsi2
+        ones    r0
+        jmp     lr
+
+        .global ___bswapsi2
+___bswapsi2
+        movbyts r0, #%%0123
+        jmp     lr
+
+        .global ___clzsi2
+        .global ___ctzsi2
+___ctzsi2
+        rev     r0
+___clzsi2
+        encod   r0 wc
+  if_c  subr    r0, #31
+  if_nc mov     r0, #32
+        jmp     lr
+        

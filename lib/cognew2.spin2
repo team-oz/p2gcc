@@ -1,11 +1,10 @@
 con
         lr = $1f6
-dat
-        org     8
-r0      long    0
-r1      long    0
-r2      long    0
+        r0 = 23
+        r1 = 22
+        r2 = 21
 
+dat
         orgh    $400
         .text
         .global _cognew2
@@ -21,4 +20,9 @@ _cognew2
 _coginit2
         setq    r2
         coginit r0, r1
+        jmp     lr
+
+        .global _cogstop2
+_cogstop2
+        cogstop r0
         jmp     lr

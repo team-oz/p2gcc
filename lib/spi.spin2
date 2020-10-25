@@ -1,11 +1,10 @@
 con
         lr = $1f6
-dat
-        org     8
-r0      long    0
-r1      long    0
-r2      long    0
+        r0 = 23
+        r1 = 22
+        r2 = 21
 
+dat
 	orgh	$400
 
 	.text

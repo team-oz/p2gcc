@@ -370,6 +370,70 @@ float __floatsisf(int value)
 {
     return valexp2float(value, 0);
 }
+
+int __isinff(float x)
+{
+    int32_t t;
+    union {float f; uint32_t i;} ix;
+    ix.f = x;
+    t = ix.i & 0x7fffffff;
+    t ^= 0x7f800000;
+    t |= -t;
+    return ~(t >> 31) & (ix.i >> 30);
+}
+
+int __isnanf(float x)
+{
+    union {float f; int32_t i;} ix;
+    ix.f = x;
+    ix.i &= 0x7fffffff;
+    ix.i = 0x7f800000 - ix.i;
+    return (int)(((uint32_t)(ix.i))>>31);
+}
+
+float __floatunsisf(unsigned int x)
+{
+    if (x == 0)
+        return 0.0f;
+
+    int i;
+    int shift;
+    uint32_t mantissa;
+    float val;
+
+    //i = encod(x);
+    __asm__("encod %0, %1" : "=r" (i) : "r" (x));
+
+    if (i < 24)
+    {
+        shift = 23 - i;
+        mantissa = (x << shift) & ~(1<<23);
+    }
+    else
+    {
+        shift = i - 23;
+        mantissa = (x >> shift) & ~(1<<23);
+        uint32_t roundtest = x << (32 - shift);
+        if (roundtest > 0x80000000)
+            mantissa++;
+        if (roundtest == 0x80000000)
+            mantissa += mantissa & 1;
+    }
+    mantissa += (uint32_t)(i + 127) << 23;
+    memcpy(&val, &mantissa, sizeof(val));
+    return val;// (*(float *)(&mantissa));
+}
+
+unsigned int __fixunssfsi(float a)
+{
+    return (a < 0) ? 0 : (long) a;
+}
+
+int __unordsf2(float x, float y)
+{
+    return (__isnanf(x) | __isnanf(y));
+}
+
 /*
 +-----------------------------------------------------------------------------+
 |                       TERMS OF USE: MIT License                             |

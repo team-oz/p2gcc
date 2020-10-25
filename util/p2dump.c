@@ -643,6 +643,7 @@ void usage(void)
     printf("  -hub addr - Set hub exec address\n");
     printf("  -dis      - Disassemble code\n");
     printf("  -data     - Print address and data\n");
+    printf("  -asc      - Include ascii in data\n");
     exit(1);
 }
 
@@ -657,6 +658,8 @@ int main(int argc, char **argv)
     char *fname = 0;
     int errthresh = 1;
     char debugstr[100];
+    int ascflag=0;
+    int asc;
 
 #if __P2GCC__
     sd_mount(58, 61, 59, 60);
@@ -676,6 +679,8 @@ int main(int argc, char **argv)
                 disflag = 1;
             else if (!strcmp(argv[i], "-data"))
                 dataflag = 1;
+            else if (!strcmp(argv[i], "-asc"))
+                ascflag = 1;
             else
                 usage();
         }
@@ -700,6 +705,16 @@ int main(int argc, char **argv)
         if (addr == hubstart && disflag && !dataflag) printf("              orgh\n");
         if (dataflag)
             printf("%4.4x %8.8x", addr, instr);
+        if (dataflag && ascflag)
+        {
+            printf(" ");
+            for (i = 0; i<25; i+=8)
+            {
+                asc = (instr >> i) & 0xff;
+                printf("%c",(asc<32 || asc>126) ? '.' : asc);
+            }
+            printf(" ");
+        }
         if (disflag)
         {
             Disassemble2(instr, addr, debugstr, &errflag);

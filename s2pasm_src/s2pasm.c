@@ -306,7 +306,7 @@ int IsHubVariable(char *ptr)
     int i;
     char *regname[] = {
         "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11",
-        "r12", "r13", "r14", "sp", "lr", "temp", "temp1", "temp2", "__has_cordic",
+        "r12", "r13", "r14", "r15", "sp", "lr", "temp", "temp1", "temp2", "__has_cordic",
         "CNT", "INA", "INB", "OUTA", "OUTB", "DIRA", "DIRB",
         "cnt", "ina", "inb", "outa", "outb", "dira", "dirb",
         "ijmp1", "ijmp2", "ijmp3", "iret1", "iret2", "iret3",
@@ -466,10 +466,13 @@ void ProcessZero(void)
 {
     int len;
     sscanf(&buffer1[6], "%d", &len);
-    if (len <= 4)
-        fprintf(outfile, "\tlong\t0%s", NEW_LINE);
-    else
-        fprintf(outfile, "\tlong\t0[%d]%s", (len+3)/4, NEW_LINE);
+    if (len & 1)
+        fprintf(outfile, "\tbyte\t0%s", NEW_LINE);
+    if (len & 2)
+        fprintf(outfile, "\tword\t0%s", NEW_LINE);
+    len &= ~3;
+    if (len)
+        fprintf(outfile, "\tlong\t0[%d]%s", len/4, NEW_LINE);
 }
 
 void CheckLocalName(void)
@@ -582,6 +585,8 @@ int main(int argc, char **argv)
         ReplaceString(" mins\t", " fges\t");
         ReplaceString("0x", "$");
         ReplaceString("jmpret", "calld");
+        ReplaceString("#__CTZSI", "__CTZSI");
+        ReplaceString("#__CLZSI", "__CLZSI");
         ReplaceString("__MASK_", "##$");
         if (lmmflag)
         {

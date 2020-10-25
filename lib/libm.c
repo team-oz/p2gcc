@@ -338,7 +338,7 @@ double complex cexp(double complex z)
 
     a[1] = 0.0; // Needed to avoid compiler warning message
 
-    memcpy(a, &z, 8);
+    memcpy(&a[0], &z, 8);
 
     if (a[0] == 0)
         b = 1.0;
@@ -346,7 +346,7 @@ double complex cexp(double complex z)
         b = exp(a[0]);
     a[0] = b * _cos_(a[1]);
     a[1] = b * _sin_(a[1]);
-    memcpy(&z, a, 8);
+    memcpy(&z, &a[0], 8);
 
     return z;
 }
